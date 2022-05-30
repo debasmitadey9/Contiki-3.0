@@ -11,9 +11,6 @@
 #include <stdio.h> /* For printf() */
 #include <string.h>
 #include "powertrace.h"
-
-#define DEBUG 0
-#if DEBUG
 #include <stdio.h>
 
 /*---------------------------------------------------------------------------*/
@@ -35,6 +32,8 @@ static struct abc_conn abc;
 static void
 abc_recv ( struct abc_conn *c )
 {
+	clock_time_t t1 = clock_time();
+  printf("\nStart Time:%lu \n",t1);
         msg_header_t * header;
         
         uint16_t data_len;
@@ -51,7 +50,7 @@ abc_recv ( struct abc_conn *c )
         i = ecdsa_verify ( header->msg, data_len, header->r, header->s, &pbkey_alice );
 	printf("\nValue of i:%d\n",i);
      
-
+	printf("Clock system time: %u / %u \n",clock_time(),CLOCK_SECOND);
         if ( i==1 ) 
 	{
 		printf("\nSignature Verified!\n");
@@ -64,6 +63,8 @@ abc_recv ( struct abc_conn *c )
               printf ( "unverified\n" );
                 
         }
+        clock_time_t t2 = clock_time();
+        printf("\nEnd Time:%lu \n",t2);
 }
 
 point_t gen_pubkey( NN_DIGIT *myPrvKey )
@@ -82,16 +83,18 @@ PROCESS_THREAD ( bob_process, ev, data )
         PROCESS_BEGIN();
 	powertrace_start(CLOCK_SECOND*5);
 	 memset ( prKey_alice, 0, NUMWORDS*NN_DIGIT_LEN );
-        prKey_alice[9] = 0x7b01;
-        prKey_alice[8] = 0x2db7;
-        prKey_alice[7] = 0x681a;
-        prKey_alice[6] = 0x3f28;
-        prKey_alice[5] = 0xb918;
-        prKey_alice[4] = 0x5c8b;
-        prKey_alice[3] = 0x2ac5;
-        prKey_alice[2] = 0xd528;
-        prKey_alice[1] = 0xdecd;
-        prKey_alice[0] = 0x52da;
+        prKey_alice[11] = 0xd6d7;
+        prKey_alice[10] = 0xd4d5;
+        prKey_alice[9] = 0xd2d3;
+        prKey_alice[8] = 0xd0d1;
+        prKey_alice[7] = 0xcecf;
+        prKey_alice[6] = 0xcccd;
+        prKey_alice[5] = 0xcacb;
+        prKey_alice[4] = 0xc8c9;
+        prKey_alice[3] = 0xc6c7;
+        prKey_alice[2] = 0xc4c5;
+        prKey_alice[1] = 0xc2c3;
+        prKey_alice[0] = 0xc0c1;
 
         ecc_init();
 	pbkey_alice = gen_pubkey(prKey_alice);
@@ -103,16 +106,15 @@ PROCESS_THREAD ( bob_process, ev, data )
       printf( "signature size %d\n", 2* ( NUMWORDS * NN_DIGIT_LEN ) );
         abc_open ( &abc, 128, &abc_call );
        
-        while ( 1 ) 
-	{
+       // while ( 1 ) 
+	//{
                 
-                etimer_set(&et, CLOCK_SECOND* 2+ random_rand()%(CLOCK_SECOND*2));
-  		PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
+               // etimer_set(&et, CLOCK_SECOND* 2+ random_rand()%(CLOCK_SECOND*2));
+  		//PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
   		abc_send(&abc);
-        }
+      //  }
 
 
         PROCESS_END();
 }
-
 
